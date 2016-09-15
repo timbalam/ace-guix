@@ -344,3 +344,4 @@ genes that are ubiquitous and single-copy within a phylogenetic lineage.")
 dynamics (differential coverage) to accurately (and almost automatically)
 extract population genomes from multi-sample metagenomic datasets.")
     (license license:gpl3+)))
+
