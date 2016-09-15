@@ -30,7 +30,8 @@
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
-  #:use-module (guix build-system ruby))
+  #:use-module (guix build-system ruby)
+  #:use-module (guix gexp))
   
 ;;; This package seems to work, and could be submitted to guix-devel in future.
 (define-public dirseq
@@ -287,3 +288,59 @@ genes that are ubiquitous and single-copy within a phylogenetic lineage.")
      (synopsis "ScreamingBackpack")
      (description "ScreamingBackpack")
      (license license:gpl3+))))
+
+
+(define-public python-tempdir
+  (package
+    (name "python-tempdir")
+    (version "0.7.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "tempdir" version))
+       (sha256
+        (base32
+         "13msyyxqbicr111a294x7fsqbkl6a31fyrqflx3q7k547gnq15k8"))))
+    (build-system python-build-system)
+    (inputs
+     `(("python-setuptools" ,python-setuptools)))
+    (home-page
+     "https://bitbucket.org/another_thomas/tempdir")
+    (synopsis
+     "Tempdirs are temporary directories, based on tempfile.mkdtemp")
+    (description
+     "Tempdirs are temporary directories, based on tempfile.mkdtemp")
+    (license license:expat)
+    (properties `((python2-variant . ,(delay python2-pytest-cache))))))
+  
+(define-public python2-tempdir
+  (package-with-python2 (strip-python2-variant python-tempdir)))
+  
+(define-public groopm2
+  (package
+    (name "groopm2")
+    (version (string-append "0.0.1"))
+    (source
+     (local-file "/srv/home/uqtlambe/git/GroopM" #:recursive? #t))
+    (build-system python-build-system)
+    (arguments
+     `(#:python ,python-2
+       #:tests? #f))    
+    (native-inputs
+     `(("python2-setuptools" ,python2-setuptools)))
+    (inputs
+;;     `(("singlem" ,singlem)))
+     `(("python-tempdir" ,python2-tempdir)))
+    (propagated-inputs
+     `(("python2-numpy" ,python2-numpy)
+       ("python2-scipy",python2-scipy)
+       ("python2-matplotlib" ,python2-matplotlib)
+       ("python2-tables" ,python2-tables)
+       ("bamm" ,bamm)))
+    (home-page "https://ecogenomics.github.io/GroopM")
+    (synopsis "Metagenomic binning suite")
+    (description
+     "GroopM is a metagenomic binning toolset. It leverages spatio-temoral
+dynamics (differential coverage) to accurately (and almost automatically)
+extract population genomes from multi-sample metagenomic datasets.")
+    (license license:gpl3+)))
