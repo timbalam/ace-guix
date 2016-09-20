@@ -316,6 +316,35 @@ genes that are ubiquitous and single-copy within a phylogenetic lineage.")
 (define-public python2-tempdir
   (package-with-python2 (strip-python2-variant python-tempdir)))
   
+(define-public python-memory_profiler
+  (package
+    (name "python-memory_profiler")
+    (version "0.41")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "memory_profiler" version))
+       (sha256
+        (base32
+         "13msyyxqbicr111a294x7fsqbkl6a31fyrqflx3q7k547gnq15k8"))))
+    (build-system python-build-system)
+    (inputs
+     `(("python-setuptools" ,python-setuptools)))
+    (home-page
+     "http://pypi.python.org/pypi/memory_profiler")
+    (synopsis
+     "A module for monitoring memory usage of a python program")
+    (description
+     "This is a python module for monitoring memory consumption of a process
+as well as line-by-line analysis of memory consumption for python programs.
+It is a pure python module and has the psutil module as optional (but highly
+recommended) dependencies.")
+    (license license:bsd-3))
+    (properties `((python2-variant . ,(delay python2-pytest-cache))))))
+
+(define-public python2-tempdir
+  (package-with-python2 (strip-python2-variant python-memory_profiler)))
+  
 (define-public groopm2
   (package
     (name "groopm2")
@@ -325,17 +354,44 @@ genes that are ubiquitous and single-copy within a phylogenetic lineage.")
     (build-system python-build-system)
     (arguments
      `(#:python ,python-2
-       #:tests? #f))    
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'build)
+         (delete 'check)
+         (add-after 'install 'wrap-executable
+           (lambda* (#:key outputs #:allow-other-keys)
+            (let* ((out (assoc-ref outputs "out"))
+                   (path (getenv "PATH")))
+              (wrap-program (string-append out "/bin/groopm2")
+                `("PATH" ":" prefix (,path))))
+            #t))
+         (add-after 'wrap-executable 'post-install-check
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             (setenv "PATH"
+                     (string-append (assoc-ref outputs "out")
+                                    "/bin:"
+                                    (getenv "PATH")))
+             (setenv "PYTHONPATH"
+                     (string-append
+                      (assoc-ref outputs "out")
+                      "/lib/python"
+                      (string-take (string-take-right
+                                    (assoc-ref inputs "python") 5) 3)
+                      "/site-packages:"
+                      (getenv "PYTHONPATH")))
+             (zero? (system* "nosetests")))))))    
     (native-inputs
      `(("python2-setuptools" ,python2-setuptools)))
     (inputs
-;;     `(("singlem" ,singlem)))
-     `(("python-tempdir" ,python2-tempdir)))
+     `(("python-tempdir" ,python2-tempdir))
+       ("python-memory_profiler" ,python2-memory_profiler)))
     (propagated-inputs
      `(("python2-numpy" ,python2-numpy)
        ("python2-scipy",python2-scipy)
        ("python2-matplotlib" ,python2-matplotlib)
        ("python2-tables" ,python2-tables)
+;;       ("singlem" singlem)
+;;       ("graftm" graftm)
        ("bamm" ,bamm)))
     (home-page "https://ecogenomics.github.io/GroopM")
     (synopsis "Metagenomic binning suite")
