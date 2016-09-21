@@ -340,9 +340,9 @@ as well as line-by-line analysis of memory consumption for python programs.
 It is a pure python module and has the psutil module as optional (but highly
 recommended) dependencies.")
     (license license:bsd-3))
-    (properties `((python2-variant . ,(delay python2-pytest-cache))))))
+    (properties `((python2-variant . ,(delay python2-pytest-cache)))))
 
-(define-public python2-tempdir
+(define-public python2-memory_profiler
   (package-with-python2 (strip-python2-variant python-memory_profiler)))
   
 (define-public groopm2
