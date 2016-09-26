@@ -316,35 +316,6 @@ genes that are ubiquitous and single-copy within a phylogenetic lineage.")
 (define-public python2-tempdir
   (package-with-python2 (strip-python2-variant python-tempdir)))
   
-(define-public python-memory_profiler
-  (package
-    (name "python-memory_profiler")
-    (version "0.41")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "memory_profiler" version))
-       (sha256
-        (base32
-         "13msyyxqbicr111a294x7fsqbkl6a31fyrqflx3q7k547gnq15k8"))))
-    (build-system python-build-system)
-    (inputs
-     `(("python-setuptools" ,python-setuptools)))
-    (home-page
-     "http://pypi.python.org/pypi/memory_profiler")
-    (synopsis
-     "A module for monitoring memory usage of a python program")
-    (description
-     "This is a python module for monitoring memory consumption of a process
-as well as line-by-line analysis of memory consumption for python programs.
-It is a pure python module and has the psutil module as optional (but highly
-recommended) dependencies.")
-    (license license:bsd-3))
-    (properties `((python2-variant . ,(delay python2-pytest-cache)))))
-
-(define-public python2-memory_profiler
-  (package-with-python2 (strip-python2-variant python-memory_profiler)))
-  
 (define-public groopm2
   (package
     (name "groopm2")
@@ -383,8 +354,7 @@ recommended) dependencies.")
     (native-inputs
      `(("python2-setuptools" ,python2-setuptools)))
     (inputs
-     `(("python-tempdir" ,python2-tempdir))
-       ("python-memory_profiler" ,python2-memory_profiler)))
+     `(("python-tempdir" ,python2-tempdir)))
     (propagated-inputs
      `(("python2-numpy" ,python2-numpy)
        ("python2-scipy",python2-scipy)
@@ -401,3 +371,45 @@ dynamics (differential coverage) to accurately (and almost automatically)
 extract population genomes from multi-sample metagenomic datasets.")
     (license license:gpl3+)))
 
+
+(define-public groopm2-profile
+  (package
+    (inherit groopm2)
+    (source
+     (local-file "/srv/home/uqtlambe/git/GroopM_prof" #:recursive? #t))
+    (arguments
+     `(#:python ,python-2
+        #:tests? #f)))
+    (inputs
+     `(("python-tempdir" ,python2-tempdir))))
+;;       ("python-memory_profiler" ,python2-memory_profiler)))
+
+
+(define-public python-memory_profiler
+  (package
+    (name "python-memory_profiler")
+    (version "0.41")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "memory_profiler" version))
+       (sha256
+        (base32
+         "13msyyxqbicr111a294x7fsqbkl6a31fyrqflx3q7k547gnq15k8"))))
+    (build-system python-build-system)
+    (inputs
+     `(("python-setuptools" ,python-setuptools)))
+    (home-page
+     "http://pypi.python.org/pypi/memory_profiler")
+    (synopsis
+     "A module for monitoring memory usage of a python program")
+    (description
+     "This is a python module for monitoring memory consumption of a process
+as well as line-by-line analysis of memory consumption for python programs.
+It is a pure python module and has the psutil module as optional (but highly
+recommended) dependencies.")
+    (license license:bsd-3)
+    (properties `((python2-variant . ,(delay python2-pytest-cache))))))
+  
+(define-public python2-memory_profiler
+  (package-with-python2 (strip-python2-variant python-memory_profiler)))
